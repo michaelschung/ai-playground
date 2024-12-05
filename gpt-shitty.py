@@ -15,7 +15,7 @@ def chat(ch):
         print(f'\n{ch.name}:\n{response}')
         if re.search('bye|goodbye', user_prompt, re.IGNORECASE):
             break
-    print(f'\n==={ch.name} disconnected.')
+    print(f'\n==={ch.name} disconnected.\n')
 
 def main():
     description = get_description()
