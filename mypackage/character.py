@@ -1,14 +1,37 @@
-from . import client, get_completion
+from . import client, get_completion_with_context
 import json
 
 class Character:
     def __init__(self, description):
-        self.name, self.backstory = self.get_character(description)
         self.messages = []
+        self.name, self.backstory = self.generate_character(description)
 
-    def get_character(self, description):
+    def add_message(self, role, content):
+        self.messages.append({
+            'role': role,
+            'content': content
+        })
+
+    def chat(self, user_prompt):
+        full_user_prompt = f'''
+            Respond to the following prompt in character, using normal
+            English as befits your character. Remember your most prominent
+            character traits, and make sure your messages are not too long
+            (unless your character specifically warrants long messages).
+            Your prompt: {user_prompt}
+        '''
+        self.add_message('user', full_user_prompt)
+        return self.contextual_response()
+
+    # Assumes the last thing in self.messages is a user prompt to answer
+    def contextual_response(self):
+        response = get_completion_with_context(self.messages)
+        self.add_message('assistant', response)
+        return response
+
+    def generate_character(self, description):
         sys_prompt = f'''
-            You are described as "{description}." Please respond to the following
+            You are described as "{description}." Please respond to the next
             request with a JSON blob that contains the attributes "name" and
             "backstory".
             The "name" field should be in the general form of "<NAME> from
@@ -27,7 +50,10 @@ class Character:
             Respond as a raw JSON object. Do not format it for display.
         '''
         user_prompt = 'Who are you?'
-        response = json.loads(get_completion(sys_prompt, user_prompt))
+        self.add_message('system', sys_prompt)
+        self.add_message('user', user_prompt)
+        raw_response = self.contextual_response()
+        response = json.loads(raw_response)
         return response['name'], response['backstory']
 
     

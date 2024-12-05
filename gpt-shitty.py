@@ -8,16 +8,10 @@ def get_description():
     return input('\n> ')
 
 def chat(ch):
-    sys_prompt = f'''
-        You are {ch.name}. Here is your backstory: {ch.backstory}.
-        When responding, remember your most prominent character traits,
-        and make sure your messages are not too long (unless your character
-        specifically warrants long messages).
-    '''
     print(f'\n===You\'ve been connected to {ch.name}. Say hi!')
     while True:
         user_prompt = input('\n> ')
-        response = get_completion(sys_prompt, user_prompt)
+        response = ch.chat(user_prompt)
         print(f'\n{ch.name}:\n{response}')
         if re.search('bye|goodbye', user_prompt, re.IGNORECASE):
             break
@@ -25,8 +19,8 @@ def chat(ch):
 
 def main():
     description = get_description()
-    character = Character(description)
-    chat(character)
+    ch = Character(description)
+    chat(ch)
 
 if __name__ == '__main__':
     main()
