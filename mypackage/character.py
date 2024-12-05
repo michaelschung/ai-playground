@@ -3,15 +3,18 @@ import json
 
 class Character:
     def __init__(self, description):
+        # Maintains context for entire conversation
         self.messages = []
         self.name, self.backstory = self.generate_character(description)
 
+    # Updates context
     def add_message(self, role, content):
         self.messages.append({
             'role': role,
             'content': content
         })
 
+    # Accepts user prompt, returns response after updating context
     def chat(self, user_prompt):
         full_user_prompt = f'''
             Respond to the following prompt in character, using normal
@@ -23,12 +26,14 @@ class Character:
         self.add_message('user', full_user_prompt)
         return self.contextual_response()
 
-    # Assumes the last thing in self.messages is a user prompt to answer
+    # Assumes last prompt in context is a user prompt to respond to
+    # Returns response text after updating context
     def contextual_response(self):
         response = get_completion_with_context(self.messages)
         self.add_message('assistant', response)
         return response
 
+    # Uses AI to generate name and backstory, updates context accordingly
     def generate_character(self, description):
         sys_prompt = f'''
             You are described as "{description}." Please respond to the next
@@ -55,5 +60,3 @@ class Character:
         raw_response = self.contextual_response()
         response = json.loads(raw_response)
         return response['name'], response['backstory']
-
-    
